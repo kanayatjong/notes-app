@@ -113,16 +113,18 @@ export default function NotesApp() {
   async function saveEdit() {
     if (!editTitle.trim()) return;
     const today = todayISO();
-    const { data, error } = await supabase
+    const { data, error: saveError } = await supabase
       .from("notes")
       .update({ title: editTitle.trim(), body: editBody.trim(), updated_at: today })
       .eq("id", editingId)
       .select()
       .single();
 
-    if (!error) {
-      setNotes(notes.map((n) => (n.id === editingId ? rowToNote(data as NoteRow) : n)));
+    if (saveError) {
+      setError("Could not save changes: " + saveError.message);
+      return;
     }
+    setNotes(notes.map((n) => (n.id === editingId ? rowToNote(data as NoteRow) : n)));
     setEditingId(null);
   }
 
